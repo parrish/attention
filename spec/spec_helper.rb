@@ -12,6 +12,12 @@ RSpec.configure do |config|
   config.disable_monkey_patching!
   Kernel.srand config.seed
 
-  config.before(:each){ Timecop.freeze }
-  config.after(:each){ Timecop.return }
+  config.before(:each) do
+    Redis.new.flushall
+    Timecop.freeze
+  end
+
+  config.after(:each) do
+    Timecop.return
+  end
 end

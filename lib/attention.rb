@@ -2,6 +2,7 @@ require 'redis'
 require 'attention/version'
 require 'attention/redis_pool'
 require 'attention/listener'
+require 'attention/instance'
 
 module Attention
   class << self
