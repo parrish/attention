@@ -2,13 +2,16 @@ require 'spec_helper'
 
 module Attention
   RSpec.describe RedisPool do
-    describe '.instance' do
+    RSpec.shared_examples_for 'a redis pool' do |type:|
       let(:redis_url){ Attention.options[:redis_url] }
-      subject{ RedisPool.instance }
+
+      let(:instance_variable){ :"@#{ type }_instance" }
+      let(:instance){ RedisPool.send :"#{ type }_instance" }
+
+      subject{ instance }
 
       before(:each) do
-        RedisPool.instance_variable_set :@instance, nil
-        RedisPool.instance_variable_set :@redis_pool, nil
+        RedisPool.instance_variable_set instance_variable, nil
       end
 
       it{ is_expected.to be_a Proc }
@@ -30,10 +33,18 @@ module Attention
       end
 
       it 'should return a singleton' do
-        first_call = RedisPool.instance.object_id
-        second_call = RedisPool.instance.object_id
+        first_call = RedisPool.instance_variable_get(instance_variable).object_id
+        second_call = RedisPool.instance_variable_get(instance_variable).object_id
         expect(first_call).to eql second_call
       end
+    end
+
+    describe '.subscribing_instance' do
+      it_behaves_like 'a redis pool', type: 'subscribing'
+    end
+
+    describe '.publishing_instance' do
+      it_behaves_like 'a redis pool', type: 'publishing'
     end
   end
 end

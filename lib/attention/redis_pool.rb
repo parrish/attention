@@ -6,13 +6,18 @@ module Attention
   class RedisPool
     attr_reader :pool
 
-    def self.instance
-      @instance ||= new
-      @redis_pool ||= ->{ @instance.pool.with{ |redis| redis } }
+    def self.subscribing_instance
+      @subscribing_instance ||= new :subscribing
+      @subscribing_instance_pool ||= ->{ @subscribing_instance.pool.with{ |redis| redis } }
+    end
+
+    def self.publishing_instance
+      @publishing_instance ||= new :publishing
+      @publishing_instance_pool ||= ->{ @publishing_instance.pool.with{ |redis| redis } }
     end
 
     private
-    def initialize
+    def initialize(type)
       pool_config = { size: Attention.options[:pool_size], timeout: Attention.options[:timeout] }
 
       @pool = ConnectionPool.new(pool_config) do
