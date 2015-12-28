@@ -1,6 +1,7 @@
 require 'thread'
 require 'json'
 require 'attention/connection'
+require 'attention/publisher'
 
 module Attention
   class Subscriber
@@ -20,10 +21,19 @@ module Attention
         redis.subscribe(key) do |on|
           on.message do |channel, payload|
             data = JSON.parse(payload) rescue payload
-            callback.call key, data
+            if data == 'unsubscribe'
+              redis.unsubscribe
+            else
+              callback.call key, data
+            end
           end
         end
       end
+    end
+
+    def unsubscribe
+      Publisher.new(key).publish 'unsubscribe'
+      @thread = nil
     end
   end
 end
