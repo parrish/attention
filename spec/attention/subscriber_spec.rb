@@ -6,12 +6,14 @@ module Attention
 
     describe '#initialize' do
       it 'should listen' do
-        expect_any_instance_of(Subscriber).to receive(:listen_to).with 'key', &callback
+        expect_any_instance_of(Subscriber).to receive(:subscribe) do |&block|
+          expect(block).to eql callback
+        end
         Subscriber.new 'key', &callback
       end
     end
 
-    describe '#listen_to' do
+    describe '#subscribe' do
       let(:message_double){ double :message }
       let(:hook){ double :hook }
       let(:redis){ double :redis }
@@ -25,7 +27,7 @@ module Attention
       end
 
       it 'subscribe to the key' do
-        expect(redis).to receive(:subscribe).with 'key'
+        expect(redis).to receive :subscribe
         Subscriber.new 'key', &callback
       end
 

@@ -7,10 +7,10 @@ module Attention
 
     def initialize(key, &callback)
       @key = key
-      listen_to key, &callback
+      subscribe &callback
     end
 
-    def listen_to(key, &callback)
+    def subscribe(&callback)
       @thread = Thread.new do
         Attention.subscribing_redis.call.subscribe(key) do |on|
           on.message do |channel, payload|
