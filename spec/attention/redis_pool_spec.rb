@@ -28,7 +28,13 @@ module Attention
       end
 
       it 'should initialize Redis' do
-        expect(Redis).to receive(:new).with(url: redis_url).and_call_original
+        expect(Redis).to receive(:new)
+          .with({
+            url: redis_url,
+            connect_timeout: Attention.options[:timeout],
+            timeout: Attention.options[:timeout]
+          }).and_call_original
+
         subject.call
       end
 

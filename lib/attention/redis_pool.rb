@@ -21,7 +21,10 @@ module Attention
       pool_config = { size: Attention.options[:pool_size], timeout: Attention.options[:timeout] }
 
       @pool = ConnectionPool.new(pool_config) do
-        connection = Redis.new url: Attention.options[:redis_url]
+        connection = Redis.new url: Attention.options[:redis_url],
+          connect_timeout: Attention.options[:timeout],
+          timeout: Attention.options[:timeout]
+
         Redis::Namespace.new Attention.options[:namespace], redis: connection
       end
     end
