@@ -13,15 +13,11 @@ module Attention
     namespace: 'attention',                # Redis key namespace
     ttl: 60,                               # Heartbeat TTL in seconds
     redis_url: 'redis://localhost:6379/0', # Redis connection string
-    pool_size: 5,                          # Size of each Redis pool (one for subscribing, one for publishing)
+    pool_size: 5,                          # Size of the publishing Redis pool
     timeout: 5                             # Redis connection timeout
   }
 
-  def self.subscribing_redis
-    RedisPool.subscribing_instance
-  end
-
-  def self.publishing_redis
-    RedisPool.publishing_instance
+  def self.redis
+    RedisPool.instance
   end
 end

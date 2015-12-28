@@ -7,7 +7,7 @@ module Attention
     end
 
     def publish(value)
-      redis = Attention.publishing_redis.call
+      redis = Attention.redis.call
       redis.publish key, value
       yield redis if block_given?
     end

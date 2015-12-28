@@ -2,9 +2,9 @@ require 'spec_helper'
 
 module Attention
   RSpec.describe Instance do
-    let(:redis){ Attention.publishing_redis.call }
+    let(:redis){ Attention.redis.call }
     before(:each) do
-      allow(Attention).to receive_message_chain('publishing_redis.call')
+      allow(Attention).to receive_message_chain('redis.call')
         .and_return redis
     end
 

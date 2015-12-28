@@ -12,7 +12,7 @@ module Attention
       let(:redis_double){ double :redis }
 
       before(:each) do
-        allow(Attention).to receive_message_chain('publishing_redis.call')
+        allow(Attention).to receive_message_chain('redis.call')
           .and_return redis_double
       end
 

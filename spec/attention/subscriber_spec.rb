@@ -21,7 +21,7 @@ module Attention
 
       before(:each) do
         allow(Thread).to receive(:new).and_yield
-        allow(Attention).to receive_message_chain('subscribing_redis.call').and_return redis
+        allow(Connection).to receive(:new).and_return redis
         allow(redis).to receive(:subscribe).and_yield hook
         allow(hook).to receive(:message).and_yield 'channel', payload
       end

@@ -6,12 +6,12 @@ module Attention
     attr_reader :id, :publisher
 
     def initialize
-      @id = Attention.publishing_redis.call.incr('instances').to_s
+      @id = Attention.redis.call.incr('instances').to_s
       @publisher = Publisher.new 'instance'
     end
 
     def publish
-      redis = Attention.publishing_redis.call
+      redis = Attention.redis.call
       redis.setex "instance_#{ @id }", Attention.options[:ttl], ip
       publisher.publish @id => ip
     end
