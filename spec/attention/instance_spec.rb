@@ -10,14 +10,14 @@ module Attention
 
     describe '#initialize' do
       before(:each) do
-        redis.set 'attention_instances', 123
+        redis.set 'instances', 123
       end
 
       it 'should increment the instance count' do
         expect{
           subject
         }.to change{
-          redis.get 'attention_instances'
+          redis.get 'instances'
         }.from('123').to '124'
       end
 
@@ -27,16 +27,14 @@ module Attention
     end
 
     describe '#publish' do
-      let(:instance_key){ 'attention_instance_1' }
-
       it 'should set the key to the ip' do
         subject.publish
-        expect(redis.get(instance_key)).to match /\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}/
+        expect(redis.get('instance_1')).to match /\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}/
       end
 
       it 'should set the key expiry' do
         subject.publish
-        expect(redis.ttl(instance_key)).to be_within(1).of Attention.options[:ttl]
+        expect(redis.ttl('instance_1')).to be_within(1).of Attention.options[:ttl]
       end
 
       it 'should publish the new instance' do

@@ -1,13 +1,13 @@
 require 'spec_helper'
 
 module Attention
-  RSpec.describe Listener do
+  RSpec.describe Subscriber do
     let(:callback){ ->(*data){ } }
 
     describe '#initialize' do
       it 'should listen' do
-        expect_any_instance_of(Listener).to receive(:listen_to).with 'key', &callback
-        Listener.new 'key', &callback
+        expect_any_instance_of(Subscriber).to receive(:listen_to).with 'key', &callback
+        Subscriber.new 'key', &callback
       end
     end
 
@@ -26,17 +26,17 @@ module Attention
 
       it 'subscribe to the key' do
         expect(redis).to receive(:subscribe).with 'key'
-        Listener.new 'key', &callback
+        Subscriber.new 'key', &callback
       end
 
       it 'should listen to messages' do
         expect(hook).to receive :message
-        Listener.new 'key', &callback
+        Subscriber.new 'key', &callback
       end
 
       it 'should call the callback' do
         expect(callback).to receive(:call).with 'key', 'data'
-        Listener.new 'key', &callback
+        Subscriber.new 'key', &callback
       end
 
       context 'with a JSON payload' do
@@ -44,7 +44,7 @@ module Attention
 
         it 'should parse the JSON' do
           expect(callback).to receive(:call).with 'key', 'foo' => 'bar'
-          Listener.new 'key', &callback
+          Subscriber.new 'key', &callback
         end
       end
     end

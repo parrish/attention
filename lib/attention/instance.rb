@@ -1,25 +1,22 @@
 require 'socket'
+require 'attention/publisher'
 
 module Attention
   class Instance
-    attr_reader :id
+    attr_reader :id, :publisher
 
     def initialize
-      key = "#{ Attention.options[:namespace] }_instances"
-      @id = Attention.publishing_redis.call.incr(key).to_s
+      @id = Attention.publishing_redis.call.incr('instances').to_s
+      @publisher = Publisher.new 'instance'
     end
 
     def publish
       redis = Attention.publishing_redis.call
-      redis.setex instance_key, Attention.options[:ttl], ip
-      redis.publish 'instance', @id => ip
+      redis.setex "instance_#{ @id }", Attention.options[:ttl], ip
+      publisher.publish @id => ip
     end
 
     private
-
-    def instance_key
-      "#{ Attention.options[:namespace] }_instance_#{ @id }"
-    end
 
     def ip
       return @ip if @ip

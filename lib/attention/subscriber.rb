@@ -2,7 +2,7 @@ require 'thread'
 require 'json'
 
 module Attention
-  class Listener
+  class Subscriber
     attr_reader :key
 
     def initialize(key, &callback)
