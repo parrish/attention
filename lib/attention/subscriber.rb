@@ -31,8 +31,12 @@ module Attention
       end
     end
 
+    def publisher
+      @publisher ||= Publisher.new(key)
+    end
+
     def unsubscribe
-      Publisher.new(key).publish 'unsubscribe'
+      publisher.publish 'unsubscribe'
       @thread = nil
     end
   end

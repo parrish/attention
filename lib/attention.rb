@@ -7,6 +7,7 @@ require 'attention/instance'
 module Attention
   class << self
     attr_accessor :options
+    attr_reader :instance
   end
 
   self.options = {
@@ -19,5 +20,34 @@ module Attention
 
   def self.redis
     RedisPool.instance
+  end
+
+  def self.announce
+    @instance ||= Instance.new
+    instance.publish
+  end
+
+  def self.instances
+    resolve ips_for instance_keys
+  end
+
+  def self.instance_keys
+    redis.call.keys 'instance_*'
+  end
+
+  def self.ips_for(keys)
+    [].tap do |list|
+      redis.call.multi do |multi|
+        keys.each do |key|
+          list << [key, multi.get(key)]
+        end
+      end
+    end
+  end
+
+  def self.resolve(list)
+    list.map do |key, future|
+      [key, future.value]
+    end.to_h
   end
 end

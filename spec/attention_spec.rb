@@ -15,4 +15,23 @@ RSpec.describe Attention do
     it{ is_expected.to be_a Proc }
     its(:call){ is_expected.to be_a Redis::Namespace }
   end
+
+  describe '.announce' do
+    it 'should publish the instance' do
+      expect(Attention::Instance).to receive_message_chain 'new.publish'
+      Attention.announce
+    end
+  end
+
+  describe '.instances' do
+    subject{ Attention.instances }
+    before(:each) do
+      3.times{ Attention::Instance.new.publish }
+    end
+
+    it{ is_expected.to be_a Hash }
+    its(:length){ is_expected.to eql 3 }
+    its('keys.first'){ is_expected.to match /instance_\d/ }
+    its('values.first'){ is_expected.to match /(\d+\.){3}\d+/}
+  end
 end
