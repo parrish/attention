@@ -2,7 +2,6 @@ $LOAD_PATH.unshift File.expand_path('../lib', __FILE__)
 require 'attention'
 require 'pry'
 require 'rspec/its'
-require 'timecop'
 Dir['./spec/support/**/*.rb'].sort.each{ |f| require f }
 
 RSpec.configure do |config|
@@ -15,10 +14,5 @@ RSpec.configure do |config|
   config.before(:each) do
     Attention.instance_variable_set :@instance, nil
     Redis.new.flushall
-    Timecop.freeze
-  end
-
-  config.after(:each) do
-    Timecop.return
   end
 end
