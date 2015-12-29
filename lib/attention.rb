@@ -3,6 +3,7 @@ require 'attention/version'
 require 'attention/redis_pool'
 require 'attention/subscriber'
 require 'attention/instance'
+require 'attention/timer'
 
 module Attention
   class << self
