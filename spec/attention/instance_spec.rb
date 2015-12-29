@@ -40,10 +40,10 @@ module Attention
 
       it 'should publish the new instance' do
         expect(redis).to receive(:publish) do |channel, payload|
-          action, info = payload.to_a.flatten
-          expect(action).to eql :added
-          expect(info[:id]).to eql '1'
-          expect(info[:ip]).to match /(\d+\.){3}\d+/
+          action, info = JSON.parse(payload).to_a.flatten
+          expect(action).to eql 'added'
+          expect(info['id']).to eql '1'
+          expect(info['ip']).to match /(\d+\.){3}\d+/
         end
 
         subject.publish
@@ -68,10 +68,10 @@ module Attention
 
       it 'should publish the removed instance' do
         expect(redis).to receive(:publish) do |channel, payload|
-          action, info = payload.to_a.flatten
-          expect(action).to eql :removed
-          expect(info[:id]).to eql '1'
-          expect(info[:ip]).to match /(\d+\.){3}\d+/
+          action, info = JSON.parse(payload).to_a.flatten
+          expect(action).to eql 'removed'
+          expect(info['id']).to eql '1'
+          expect(info['ip']).to match /(\d+\.){3}\d+/
         end
 
         subject.unpublish
