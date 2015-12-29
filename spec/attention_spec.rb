@@ -52,4 +52,20 @@ RSpec.describe Attention do
     its(:length){ is_expected.to eql 3 }
     its('first.keys'){ is_expected.to match_array %w(id ip) }
   end
+
+  describe '.on_change' do
+    let(:callback){ ->(*args){ } }
+
+    it 'should subscribe to changes' do
+      expect(Attention::Subscriber).to receive(:new).with 'instance'
+      Attention.on_change &callback
+    end
+
+    it 'should call the callback' do
+      allow(Attention::Subscriber).to receive(:new).and_yield 'channel', 'changes'
+      allow(Attention).to receive(:instances).and_return 'instances'
+      expect(callback).to receive(:call).with 'changes', 'instances'
+      Attention.on_change &callback
+    end
+  end
 end

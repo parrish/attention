@@ -33,6 +33,12 @@ module Attention
     @instance.unpublish if @instance
   end
 
+  def self.on_change(&callback)
+    Subscriber.new('instance') do |channel, change|
+      callback.call change, instances
+    end
+  end
+
   def self.instances
     resolve info_for instance_keys
   end
