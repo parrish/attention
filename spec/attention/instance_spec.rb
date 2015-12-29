@@ -91,6 +91,22 @@ module Attention
       end
     end
 
+    describe '#info' do
+      context 'without overrides' do
+        subject{ Instance.new.info }
+        its([:id]){ is_expected.to eql '1' }
+        its([:ip]){ is_expected.to match /(\d+\.){3}\d+/ }
+        it{ is_expected.to_not have_key :port }
+      end
+
+      context 'with overrides' do
+        subject{ Instance.new(ip: '1.2.3.4', port: 1234).info }
+        its([:id]){ is_expected.to eql '1' }
+        its([:ip]){ is_expected.to eql '1.2.3.4' }
+        its([:port]){ is_expected.to eql 1234 }
+      end
+    end
+
     describe '#heartbeat' do
       before(:each) do
         allow(Timer).to receive(:new).and_yield
