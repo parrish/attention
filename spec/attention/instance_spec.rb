@@ -4,6 +4,7 @@ module Attention
   RSpec.describe Instance do
     let(:redis){ Attention.redis.call }
     before(:each) do
+      allow(Timer).to receive :new
       allow(Attention).to receive_message_chain('redis.call')
         .and_return redis
     end
@@ -29,7 +30,7 @@ module Attention
     describe '#publish' do
       it 'should set the key to the ip' do
         subject.publish
-        expect(redis.get('instance_1')).to match /\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}/
+        expect(redis.get('instance_1')).to match /(\d+\.){3}\d+/
       end
 
       it 'should set the key expiry' do
@@ -39,12 +40,70 @@ module Attention
 
       it 'should publish the new instance' do
         expect(redis).to receive(:publish) do |channel, payload|
-          id, ip = payload.to_a.flatten
-          expect(id).to eql '1'
-          expect(ip).to match /\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}/
+          action, info = payload.to_a.flatten
+          expect(action).to eql :added
+          expect(info[:id]).to eql '1'
+          expect(info[:ip]).to match /(\d+\.){3}\d+/
         end
 
         subject.publish
+      end
+
+      it 'should start the heartbeat' do
+        expect(subject).to receive(:heartbeat)
+        subject.publish
+      end
+    end
+
+    describe '#unpublish' do
+      let(:timer_double){ double stop: true }
+      before(:each) do
+        subject.instance_variable_set :@heartbeat, timer_double
+      end
+
+      it 'should delete the instance key' do
+        expect(redis).to receive(:del).with 'instance_1'
+        subject.unpublish
+      end
+
+      it 'should publish the removed instance' do
+        expect(redis).to receive(:publish) do |channel, payload|
+          action, info = payload.to_a.flatten
+          expect(action).to eql :removed
+          expect(info[:id]).to eql '1'
+          expect(info[:ip]).to match /(\d+\.){3}\d+/
+        end
+
+        subject.unpublish
+      end
+
+      it 'should stop the heartbeat' do
+        expect(timer_double).to receive :stop
+        subject.unpublish
+      end
+
+      it 'should clear the heartbeat' do
+        expect{
+          subject.unpublish
+        }.to change{
+          subject.instance_variable_get :@heartbeat
+        }.to nil
+      end
+    end
+
+    describe '#heartbeat' do
+      before(:each) do
+        allow(Timer).to receive(:new).and_yield
+      end
+
+      it 'should start a timer' do
+        expect(Timer).to receive(:new).with Attention.options[:ttl] - 5
+        subject.send :heartbeat
+      end
+
+      it 'should refresh the instance key TTL' do
+        expect(redis).to receive(:expire).with 'instance_1', Attention.options[:ttl]
+        subject.send :heartbeat
       end
     end
   end

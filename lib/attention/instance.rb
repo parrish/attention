@@ -1,5 +1,6 @@
 require 'socket'
 require 'attention/publisher'
+require 'attention/timer'
 
 module Attention
   class Instance
@@ -13,10 +14,29 @@ module Attention
     def publish
       redis = Attention.redis.call
       redis.setex "instance_#{ @id }", Attention.options[:ttl], ip
-      publisher.publish @id => ip
+      publisher.publish added: { id: @id, ip: ip }
+      heartbeat
+    end
+
+    def unpublish
+      return unless @heartbeat
+      Attention.redis.call.del "instance_#{ @id }"
+      publisher.publish removed: { id: @id, ip: ip }
+      @heartbeat.stop
+      @heartbeat = nil
     end
 
     private
+
+    def heartbeat
+      @heartbeat ||= Timer.new(heartbeat_frequency) do
+        Attention.redis.call.expire "instance_#{ @id }", Attention.options[:ttl]
+      end
+    end
+
+    def heartbeat_frequency
+      [1, Attention.options[:ttl] - 5].max
+    end
 
     def ip
       return @ip if @ip
