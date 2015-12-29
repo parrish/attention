@@ -14,6 +14,7 @@ module Attention
       end
 
       allow(timer).to receive :sleep
+      allow(timer).to receive(:loop).and_yield
       allow(Thread).to receive(:new).and_yield
     end
 

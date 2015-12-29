@@ -13,21 +13,29 @@ module Attention
 
     def start
       @thread ||= Thread.new do
-        sleep @frequency
-        lock.synchronize do
-          callback.call
-          @thread = nil
+        loop do
+          sleep @frequency
+          lock.synchronize do
+            callback.call
+          end
         end
-        start
       end
     end
 
+    def started?
+      !!thread
+    end
+
     def stop
+      return if stopped?
       lock.synchronize do
-        return unless thread
         thread.kill
         @thread = nil
       end
+    end
+
+    def stopped?
+      !started?
     end
   end
 end

@@ -36,14 +36,18 @@ module Attention
         timer.actual_start
       end
 
-      it 'should clear the timer thread' do
+      it 'should restart the timer' do
+        expect(timer).to receive :loop
         timer.actual_start
-        expect(timer.thread).to be_nil
       end
 
-      it 'should restart the timer' do
-        expect(timer).to receive :start
-        timer.actual_start
+      it 'should be started' do
+        allow(Thread).to receive(:new).and_return 'a thread'
+        expect{
+          timer.actual_start
+        }.to change{
+          timer.started?
+        }.from(false).to true
       end
     end
 
@@ -65,6 +69,14 @@ module Attention
         }.to change{
           timer.thread
         }.from(thread_double).to nil
+      end
+
+      it 'should be stopped' do
+        expect{
+          timer.stop
+        }.to change{
+          timer.stopped?
+        }.from(false).to true
       end
     end
   end
