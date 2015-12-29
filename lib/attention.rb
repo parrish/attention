@@ -24,7 +24,8 @@ module Attention
   end
 
   def self.activate(ip: nil, port: nil)
-    @instance ||= Instance.new ip: ip, port: port
+    return if @instance
+    @instance = Instance.new ip: ip, port: port
     instance.publish
   end
 
