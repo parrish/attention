@@ -56,4 +56,6 @@ module Attention
       JSON.parse future.value
     end
   end
+
+  at_exit{ deactivate }
 end
