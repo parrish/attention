@@ -13,6 +13,7 @@ RSpec.configure do |config|
   Kernel.srand config.seed
 
   config.before(:each) do
+    Attention.instance_variable_set :@instance, nil
     Redis.new.flushall
     Timecop.freeze
   end

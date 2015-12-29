@@ -15,7 +15,7 @@ module Attention
 
     def publish
       redis = Attention.redis.call
-      redis.setex "instance_#{ @id }", Attention.options[:ttl], ip
+      redis.setex "instance_#{ @id }", Attention.options[:ttl], JSON.dump(info)
       publisher.publish added: info
       heartbeat
     end

@@ -23,32 +23,36 @@ module Attention
     RedisPool.instance
   end
 
-  def self.announce
-    @instance ||= Instance.new
+  def self.activate(ip: nil, port: nil)
+    @instance ||= Instance.new ip: ip, port: port
     instance.publish
   end
 
+  def self.deactivate
+    @instance.unpublish if @instance
+  end
+
   def self.instances
-    resolve ips_for instance_keys
+    resolve info_for instance_keys
   end
 
   def self.instance_keys
     redis.call.keys 'instance_*'
   end
 
-  def self.ips_for(keys)
+  def self.info_for(keys)
     [].tap do |list|
       redis.call.multi do |multi|
         keys.each do |key|
-          list << [key, multi.get(key)]
+          list << multi.get(key)
         end
       end
     end
   end
 
   def self.resolve(list)
-    list.map do |key, future|
-      [key, future.value]
-    end.to_h
+    list.map do |future|
+      JSON.parse future.value
+    end
   end
 end
