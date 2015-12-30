@@ -1,8 +1,8 @@
 # Attention
 
-[![Build Status](https://travis-ci.org/parrish/Attention.svg?branch=master)](https://travis-ci.org/parrish/Attention)
-[![Test Coverage](https://codeclimate.com/github/parrish/Attention/badges/coverage.svg)](https://codeclimate.com/github/parrish/Attention)
-[![Code Climate](https://codeclimate.com/github/parrish/Attention/badges/gpa.svg)](https://codeclimate.com/github/parrish/Attention)
+[![Build Status](https://travis-ci.org/parrish/attention.svg?branch=master)](https://travis-ci.org/parrish/attention)
+[![Test Coverage](https://codeclimate.com/github/parrish/attention/badges/coverage.svg)](https://codeclimate.com/github/parrish/attention)
+[![Code Climate](https://codeclimate.com/github/parrish/attention/badges/gpa.svg)](https://codeclimate.com/github/parrish/attention)
 [![Gem Version](https://badge.fury.io/rb/attention.svg)](http://badge.fury.io/rb/attention)
 
 Redis-based server awareness for distributed applications
