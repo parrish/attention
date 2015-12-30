@@ -1,17 +1,19 @@
 module Attention
+  # Uses Redis pub/sub to publish events
   class Publisher
-    attr_reader :key
-
-    def initialize(key)
-      @key = key
-    end
-
-    def publish(value)
+    # Publishes the value to the channel
+    # @param channel [String] The channel to publish to
+    # @param value [Object] The value to publish
+    # @yield Allows an optional block to use the Redis connection
+    # @yieldparam redis [Redis] The Redis connection
+    def publish(channel, value)
       redis = Attention.redis.call
-      redis.publish key, payload_for(value)
+      redis.publish channel, payload_for(value)
       yield redis if block_given?
     end
 
+    # Converts published values to JSON if possible
+    # @api private
     def payload_for(value)
       case value
       when Array, Hash

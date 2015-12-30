@@ -4,13 +4,14 @@ module Attention
   RSpec.describe Subscriber do
     let(:callback){ ->(*data){ } }
     let(:message_double){ double :message }
+    let(:thread_double){ double kill: true }
     let(:hook){ double :hook }
     let(:redis){ double :redis }
     let(:payload){ 'data' }
-    let(:subscriber){ Subscriber.new 'key', &callback }
+    let(:subscriber){ Subscriber.new 'channel', &callback }
 
     before(:each) do
-      allow(Thread).to receive(:new).and_yield.and_return Thread.current
+      allow(Thread).to receive(:new).and_yield.and_return thread_double
       allow(Connection).to receive(:new).and_return redis
       allow(redis).to receive(:subscribe).and_yield hook
       allow(hook).to receive(:message).and_yield 'channel', payload
@@ -26,7 +27,7 @@ module Attention
     end
 
     describe '#subscribe' do
-      it 'subscribe to the key' do
+      it 'subscribe to the channel' do
         expect(redis).to receive :subscribe
         subscriber
       end
@@ -37,7 +38,7 @@ module Attention
       end
 
       it 'should call the callback' do
-        expect(callback).to receive(:call).with 'key', 'data'
+        expect(callback).to receive(:call).with 'channel', 'data'
         subscriber
       end
 
@@ -45,7 +46,7 @@ module Attention
         let(:payload){ JSON.dump(foo: 'bar') }
 
         it 'should parse the JSON' do
-          expect(callback).to receive(:call).with 'key', 'foo' => 'bar'
+          expect(callback).to receive(:call).with 'channel', 'foo' => 'bar'
           subscriber
         end
       end
@@ -86,7 +87,13 @@ module Attention
       end
 
       it 'should publish an unsubscribe message' do
-        expect(publisher).to receive(:publish).with 'unsubscribe'
+        expect(publisher).to receive(:publish).with 'channel', 'unsubscribe'
+        subscriber.unsubscribe
+      end
+
+      it 'should stop the thread' do
+        subscriber.instance_variable_set :@thread, thread_double
+        expect(thread_double).to receive :kill
         subscriber.unsubscribe
       end
 
