@@ -1,5 +1,10 @@
 # Attention
 
+[![Build Status](https://travis-ci.org/parrish/Attention.svg?branch=master)](https://travis-ci.org/parrish/Attention)
+[![Test Coverage](https://codeclimate.com/github/parrish/Attention/badges/coverage.svg)](https://codeclimate.com/github/parrish/Attention)
+[![Code Climate](https://codeclimate.com/github/parrish/Attention/badges/gpa.svg)](https://codeclimate.com/github/parrish/Attention)
+[![Gem Version](https://badge.fury.io/rb/attention.svg)](http://badge.fury.io/rb/attention)
+
 Redis-based server awareness for distributed applications
 
 ## Installation
@@ -20,7 +25,56 @@ Or install it yourself as:
 
 ## Usage
 
+Activate the instance:
+```ruby
+# Autodiscover the ip and exclude the port
+Attention.activate
 
+# Or specify them explicitly
+Attention.activate ip: '1.2.3.4', port: 9000
+```
+
+The current instance is accessible at:
+```ruby
+Attention.instance
+```
+
+Deactivate the instance:
+```ruby
+Attention.deactivate
+```
+
+Subscribe to instance availability changes:
+```ruby
+Attention.on_change do |change, instances|
+  # This block is asynchronously called on each change
+end
+```
+
+Or get the list of available instances:
+```ruby
+Attention.instances
+```
+
+## Configuration
+
+Options can be set on `Attention.options`
+
+```ruby
+Attention.options = {
+  namespace: 'attention',                # Redis key namespace
+  ttl: 60,                               # Instance heartbeat TTL in seconds
+  redis_url: 'redis://localhost:6379/0', # Redis connection string
+  pool_size: 5,                          # Size of the publishing Redis connection pool
+  timeout: 5                             # Redis connection timeout
+}
+```
+
+## Notes
+
+The top-level API provides a simple way to keep track of instance availability.  More complex schemes of communication could be implemented by using the [`Subscriber`](http://www.rubydoc.info/github/parrish/attention/master/Attention/Subscriber) and [`Publisher`](http://www.rubydoc.info/github/parrish/attention/master/Attention/Publisher) classes directly.
+
+Instances attempt to deactivate themselves when the program terminates(`at_exit`).  If the instance crashes in a dramatic fashion (or a `kill -9`), the instance will continue to be listed as available until the TTL (`Attention.options[:ttl]`) expires.
 
 ## Development
 
@@ -36,4 +90,3 @@ Bug reports and pull requests are welcome on GitHub at https://github.com/parris
 ## License
 
 The gem is available as open source under the terms of the [MIT License](http://opensource.org/licenses/MIT).
-
