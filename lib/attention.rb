@@ -41,11 +41,12 @@ module Attention
   # Publishes this server {Instance}
   # @param ip [String] Optionally override the IP of the server
   # @param port [Fixnum, Numeric] Optionally specify the port of the server
+  # @return [Instance] This server instance
   # @see Instance#publish
   def self.activate(ip: nil, port: nil)
-    return if @instance
-    @instance = Instance.new ip: ip, port: port
+    @instance ||= Instance.new ip: ip, port: port
     instance.publish
+    instance
   end
 
   # Unpublishes this server {Instance}
