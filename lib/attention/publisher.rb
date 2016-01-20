@@ -8,8 +8,8 @@ module Attention
     # @yieldparam redis [Redis] The Redis connection
     def publish(channel, value)
       redis = Attention.redis.call
-      redis.publish channel, payload_for(value)
       yield redis if block_given?
+      redis.publish channel, payload_for(value)
     end
 
     # Converts published values to JSON if possible
