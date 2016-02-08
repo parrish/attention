@@ -2,6 +2,7 @@ require 'redis'
 require 'attention/version'
 require 'attention/redis_pool'
 require 'attention/subscriber'
+require 'attention/blocking_subscriber'
 require 'attention/instance'
 require 'attention/timer'
 
