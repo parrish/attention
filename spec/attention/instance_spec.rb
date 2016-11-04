@@ -3,8 +3,10 @@ require 'spec_helper'
 module Attention
   RSpec.describe Instance do
     let(:redis){ Attention.redis.call }
+    let(:timer_double){ double shutdown: true, execute: true }
     before(:each) do
-      allow(Timer).to receive :new
+      allow(Concurrent::TimerTask).to receive(:new)
+        .and_return timer_double
       allow(Attention).to receive_message_chain('redis.call')
         .and_return redis
     end
@@ -56,7 +58,6 @@ module Attention
     end
 
     describe '#unpublish' do
-      let(:timer_double){ double stop: true }
       before(:each) do
         subject.instance_variable_set :@heartbeat, timer_double
       end
@@ -78,7 +79,7 @@ module Attention
       end
 
       it 'should stop the heartbeat' do
-        expect(timer_double).to receive :stop
+        expect(timer_double).to receive :shutdown
         subject.unpublish
       end
 
@@ -109,16 +110,20 @@ module Attention
 
     describe '#heartbeat' do
       before(:each) do
-        allow(Timer).to receive(:new).and_yield
+        allow(Concurrent::TimerTask).to receive(:new)
+          .and_yield
+          .and_return timer_double
       end
 
       it 'should start a timer' do
-        expect(Timer).to receive(:new).with Attention.options[:ttl] - 5
+        expect(Concurrent::TimerTask).to receive(:new)
+          .with(execution_interval: Attention.options[:ttl] - 5)
+          .and_return timer_double
         subject.send :heartbeat
       end
 
-      it 'should refresh the instance key TTL' do
-        expect(redis).to receive(:expire).with 'instance_1', Attention.options[:ttl]
+      it 'should refresh the instance key' do
+        expect(redis).to receive(:setex).with 'instance_1', Attention.options[:ttl], String
         subject.send :heartbeat
       end
     end

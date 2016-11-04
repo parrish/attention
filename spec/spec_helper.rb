@@ -4,7 +4,6 @@ $LOAD_PATH.unshift File.expand_path('../lib', __FILE__)
 require 'attention'
 require 'pry'
 require 'rspec/its'
-Dir['./spec/support/**/*.rb'].sort.each{ |f| require f }
 
 RSpec.configure do |config|
   config.run_all_when_everything_filtered = true

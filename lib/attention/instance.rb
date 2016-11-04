@@ -1,6 +1,6 @@
 require 'socket'
+require 'concurrent'
 require 'attention/publisher'
-require 'attention/timer'
 
 module Attention
   # A publishable representation of the current server
@@ -49,10 +49,10 @@ module Attention
     # Unpublishes this server and stops the {#heartbeat}
     def unpublish
       return unless @heartbeat
+      @heartbeat.shutdown
       publisher.publish('instance', removed: info) do |redis|
         redis.del "instance_#{ @id }"
       end
-      @heartbeat.stop
       @heartbeat = nil
     end
 
@@ -67,14 +67,17 @@ module Attention
 
     private
 
-    # Uses a {Timer} to periodically tell Redis that this
+    # Uses a {Concurrent::TimerTask} to periodically tell Redis that this
     # server is still online
     # @!visibility public
     # @api private
     def heartbeat
-      @heartbeat ||= Timer.new(heartbeat_frequency) do
-        Attention.redis.call.expire "instance_#{ @id }", Attention.options[:ttl]
+      return @heartbeat if @heartbeat
+      @heartbeat = Concurrent::TimerTask.new(execution_interval: heartbeat_frequency) do
+        Attention.redis.call.setex "instance_#{ @id }", Attention.options[:ttl], JSON.dump(info)
       end
+      @heartbeat.execute
+      @heartbeat
     end
 
     # The frequency of the {#heartbeat} is based on Attention.options[:ttl]
